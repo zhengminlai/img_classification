@@ -22,13 +22,13 @@ filter_size_3 = 3
 num_filters_3 = 64
 
 # Fully-connected layer.
-fc_size = 128  # Number of neurons in fully-connected layer.
+fc_size = 256  # Number of neurons in fully-connected layer.
 
 # Number of color channels for the images
 num_channels = 3
 
 # image dimensions
-img_size = 128
+img_size = 256
 
 # Size of image when flattened to a single dimension
 img_size_flat = img_size * img_size * num_channels
@@ -38,7 +38,7 @@ img_shape = (img_size, img_size)
 
 # load images in batch: note that the number of images should be divided evenly
 # by `batch_size`
-batch_size = 10
+batch_size = 9
 
 # validation ratio
 validation_ratio = .2
@@ -47,7 +47,7 @@ validation_ratio = .2
 early_stopping = None
 
 # training images path, we shall split the images into training and validation set
-train_path = 'D:/product/dataset/train/'
+train_path = '/home/zhengminlai/下载/dataset/train/'
 
 data = dataset.read_train_sets(train_path, img_size, classes, validation_size=validation_ratio)
 

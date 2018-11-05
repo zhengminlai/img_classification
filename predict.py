@@ -8,7 +8,7 @@ classes = ['Qualified', 'Unqualified']
 
 session = tf.Session()
 
-ckpt = tf.train.get_checkpoint_state('models/')
+ckpt = tf.train.get_checkpoint_state('model/')
 saver = tf.train.import_meta_graph(ckpt.model_checkpoint_path +'.meta')
 saver.restore(session, ckpt.model_checkpoint_path)
 
@@ -16,7 +16,7 @@ saver.restore(session, ckpt.model_checkpoint_path)
 num_channels = 3
 
 # image dimensions (only squares for now)
-img_size = 128
+img_size = 256
 
 # Size of image when flattened to a single dimension
 img_size_flat = img_size * img_size * num_channels
