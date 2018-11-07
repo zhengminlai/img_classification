@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 import tensorflow as tf
-import cv2
+import dataset
 
 # class info
 classes = ['Qualified', 'Unqualified']
@@ -9,7 +9,7 @@ classes = ['Qualified', 'Unqualified']
 session = tf.Session()
 
 ckpt = tf.train.get_checkpoint_state('model/')
-saver = tf.train.import_meta_graph(ckpt.model_checkpoint_path +'.meta')
+saver = tf.train.import_meta_graph(ckpt.model_checkpoint_path + '.meta')
 saver.restore(session, ckpt.model_checkpoint_path)
 
 # Number of color channels for the images: 1 channel for gray-scale.
@@ -38,9 +38,32 @@ def sample_prediction(test_im):
     test_pred = session.run(y, feed_dict=feed_dict_test)
     return classes[test_pred[0]]
 
-if __name__ == '__main__':
-    test_file_addr = sys.argv[1]
-    test_image = cv2.imread(test_file_addr)
-    test_image = cv2.resize(test_image, (img_size, img_size), cv2.INTER_LINEAR) / 255
 
-    print("Predicted class for test image: {}".format(sample_prediction(test_image)))
+if __name__ == '__main__':
+    test_img_dir = sys.argv[1]
+    output_addr = sys.argv[2]
+
+    test_imgs, test_img_names = dataset.read_test_set(test_img_dir, img_size)
+
+    output_str = ''
+    i = 0
+    for img_name in test_img_names:
+        j = 1
+        predict_class = []
+        is_qualified = True
+        unqualified_indexes = []
+        while j <= 3:
+            test_image = test_imgs[i]
+            predict_rst = sample_prediction(test_image)
+            predict_class.append(predict_rst)
+            if predict_rst == 'Unqualified':
+                unqualified_indexes.append(j)
+                if is_qualified:
+                    is_qualified = False
+            j += 1
+            i += 1
+        if is_qualified:
+            output_str += "{}: {}\n".format(img_name, 'Qualified')
+        else:
+            output_str += "{}: {}, {}\n".format(img_name, 'Unqualified', unqualified_indexes)
+

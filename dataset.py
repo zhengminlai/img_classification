@@ -5,6 +5,31 @@ import cv2
 from sklearn.utils import shuffle
 
 
+def cut_img(img, img_size):
+    height = len(img)
+    width = len(img[0])
+    img = img[int(height / 5): height, int(width / 5): int(4 * width / 5)]
+
+    height_1 = len(img)
+    width_1 = len(img[0])
+
+    img_1 = img[0: height_1, 0: int(width_1 / 3)]
+    img_2 = img[0: height_1, int(width_1 / 3): int(2 * width_1 / 3)]
+    img_3 = img[0: height_1, int(2 * width_1 / 3): int(width_1)]
+
+    img_1 = cv2.resize(img_1, (img_size, img_size), cv2.INTER_LINEAR)
+    img_2 = cv2.resize(img_2, (img_size, img_size), cv2.INTER_LINEAR)
+    img_3 = cv2.resize(img_3, (img_size, img_size), cv2.INTER_LINEAR)
+
+    images = []
+
+    images.append(img_1)
+    images.append(img_2)
+    images.append(img_3)
+
+    return images
+
+
 def load_train(train_path, image_size, classes):
     images = []
     labels = []
@@ -13,6 +38,8 @@ def load_train(train_path, image_size, classes):
 
     print('Reading training images')
     print("classes:{}".format(classes))
+
+    unqualified_index = classes.index('Unqualified')
     for fld in classes:
         # the data directory has a separate folder for each class,
         # and that each folder is named after the class
@@ -21,14 +48,30 @@ def load_train(train_path, image_size, classes):
         files = glob.glob(path)
         for fl in files:
             image = cv2.imread(fl)
-            image = cv2.resize(image, (image_size, image_size), cv2.INTER_LINEAR)
-            images.append(image)
-            label = np.zeros(len(classes))
-            label[index] = 1.0
-            labels.append(label)
+            cut_imgs = cut_img(image, image_size)
             flbase = os.path.basename(fl)
-            ids.append(flbase)
-            cls.append(fld)
+
+            fname = flbase.split('.jpg')[0]
+            unq_indexes = []
+            if fname.__contains__('.'):
+                fname = fname.split('.')
+                fname.pop(0)
+                unq_indexes = [int(i) for i in fname]
+                print("unq_indexes:{}".format(unq_indexes))
+
+            for i, cut_img_tmp in enumerate(cut_imgs):
+                images.append(cut_img_tmp)
+                ids.append(flbase + str(i))
+                label = np.zeros(len(classes))
+                if i in unq_indexes:
+                    label[unqualified_index] = 1.0
+                    labels.append(label)
+                    cls.append('Unqualified')
+                else:
+                    label[index] = 1.0
+                    labels.append(label)
+                    cls.append(fld)
+
     images = np.array(images)
     labels = np.array(labels)
     ids = np.array(ids)
@@ -42,23 +85,26 @@ def load_test(test_path, image_size):
     print("Test path:{}".format(path))
     files = sorted(glob.glob(path))
 
-    X_test = []
-    X_test_id = []
+    test_images = []
+    test_image_names = []
     print("Reading test images")
     for fl in files:
         flbase = os.path.basename(fl)
+        test_image_names.append(flbase)
         img = cv2.imread(fl)
-        img = cv2.resize(img, (image_size, image_size), cv2.INTER_LINEAR)
-        X_test.append(img)
-        X_test_id.append(flbase)
+        cut_imgs = cut_img(img, image_size)
+
+        for cut_img_tmp in cut_imgs:
+            test_images.append(cut_img_tmp)
+
 
     # because we're not creating a DataSet object for the test images,
     # normalization happens here
-    X_test = np.array(X_test, dtype=np.uint8)
-    X_test = X_test.astype('float32')
-    X_test = X_test / 255
+    test_images = np.array(test_images, dtype=np.uint8)
+    test_images = test_images.astype('float32')
+    test_images = test_images / 255
 
-    return X_test, X_test_id
+    return test_images, test_image_names
 
 
 class DataSet(object):
@@ -66,7 +112,7 @@ class DataSet(object):
         """Construct a DataSet. one_hot arg is used only if fake_data is true."""
 
         self._num_examples = images.shape[0]
-        print("num examples:" + str(self._num_examples))
+        print("num examples: " + str(self._num_examples))
         # Convert shape from [num examples, rows, columns, depth]
         # to [num examples, rows*columns] (assuming depth == 1)
         # Convert from [0, 255] -> [0.0, 1.0].

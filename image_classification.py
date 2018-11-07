@@ -38,7 +38,7 @@ img_shape = (img_size, img_size)
 
 # load images in batch: note that the number of images should be divided evenly
 # by `batch_size`
-batch_size = 9
+batch_size = 8
 
 # validation ratio
 validation_ratio = .2
