@@ -38,6 +38,10 @@ def sample_prediction(test_im):
     test_pred = session.run(y, feed_dict=feed_dict_test)
     return classes[test_pred[0]]
 
+def save_to_file(file_name, contents):
+    fh = open(file_name, 'w')
+    fh.write(contents)
+    fh.close()
 
 if __name__ == '__main__':
     test_img_dir = sys.argv[1]
@@ -66,4 +70,4 @@ if __name__ == '__main__':
             output_str += "{}: {}\n".format(img_name, 'Qualified')
         else:
             output_str += "{}: {}, {}\n".format(img_name, 'Unqualified', unqualified_indexes)
-
+    save_to_file(output_addr, output_str)

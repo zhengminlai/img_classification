@@ -38,7 +38,7 @@ img_shape = (img_size, img_size)
 
 # load images in batch: note that the number of images should be divided evenly
 # by `batch_size`
-batch_size = 8
+batch_size = 10
 
 # validation ratio
 validation_ratio = .2
@@ -47,7 +47,7 @@ validation_ratio = .2
 early_stopping = None
 
 # training images path, we shall split the images into training and validation set
-train_path = '/home/zhengminlai/下载/dataset/train/'
+train_path = 'D:/product/dataset/train/'
 
 data = dataset.read_train_sets(train_path, img_size, classes, validation_size=validation_ratio)
 
