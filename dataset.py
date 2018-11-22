@@ -5,6 +5,7 @@ import cv2
 from sklearn.utils import shuffle
 
 
+# Cut the image to 3 sub images so that we can train them separately
 def cut_img(img, img_size):
     height = len(img)
     width = len(img[0])
@@ -36,10 +37,10 @@ def load_train(train_path, image_size, classes):
     ids = []
     cls = []
 
-    print('Reading training images')
+    print('Reading training images...')
     print("classes:{}".format(classes))
 
-    unqualified_index = classes.index('Unqualified')
+    qualified_index = classes.index('Qualified')
     for fld in classes:
         # the data directory has a separate folder for each class,
         # and that each folder is named after the class
@@ -52,21 +53,20 @@ def load_train(train_path, image_size, classes):
             flbase = os.path.basename(fl)
 
             fname = flbase.split('.jpg')[0]
-            unq_indexes = []
+            q_indexes = []
             if fname.__contains__('.'):
                 fname = fname.split('.')
                 fname.pop(0)
-                unq_indexes = [int(i) for i in fname]
-                print("unq_indexes:{}".format(unq_indexes))
+                q_indexes = [int(i) for i in fname]
 
             for i, cut_img_tmp in enumerate(cut_imgs):
                 images.append(cut_img_tmp)
                 ids.append(flbase + str(i))
                 label = np.zeros(len(classes))
-                if i in unq_indexes:
-                    label[unqualified_index] = 1.0
+                if i in q_indexes:
+                    label[qualified_index] = 1.0
                     labels.append(label)
-                    cls.append('Unqualified')
+                    cls.append('Qualified')
                 else:
                     label[index] = 1.0
                     labels.append(label)
@@ -76,7 +76,7 @@ def load_train(train_path, image_size, classes):
     labels = np.array(labels)
     ids = np.array(ids)
     cls = np.array(cls)
-
+    print('Finish reading training images.')
     return images, labels, ids, cls
 
 
@@ -87,7 +87,7 @@ def load_test(test_path, image_size):
 
     test_images = []
     test_image_names = []
-    print("Reading test images")
+    print("Reading test images...")
     for fl in files:
         flbase = os.path.basename(fl)
         test_image_names.append(flbase)
@@ -97,19 +97,16 @@ def load_test(test_path, image_size):
         for cut_img_tmp in cut_imgs:
             test_images.append(cut_img_tmp)
 
-
-    # because we're not creating a DataSet object for the test images,
-    # normalization happens here
+    # normalization
     test_images = np.array(test_images, dtype=np.uint8)
     test_images = test_images.astype('float32')
     test_images = test_images / 255
-
+    print("Finish reading test images")
     return test_images, test_image_names
 
 
 class DataSet(object):
     def __init__(self, images, labels, ids, cls):
-        """Construct a DataSet. one_hot arg is used only if fake_data is true."""
 
         self._num_examples = images.shape[0]
         print("num examples: " + str(self._num_examples))
@@ -160,13 +157,7 @@ class DataSet(object):
             # Finished epoch
             self._epochs_completed += 1
 
-            # # Shuffle the data (maybe)
-            # perm = np.arange(self._num_examples)
-            # np.random.shuffle(perm)
-            # self._images = self._images[perm]
-            # self._labels = self._labels[perm]
             # Start next epoch
-
             start = 0
             self._index_in_epoch = batch_size
             assert batch_size <= self._num_examples

@@ -47,7 +47,7 @@ validation_ratio = .2
 early_stopping = None
 
 # training images path, we shall split the images into training and validation set
-train_path = 'D:/product/dataset/train/'
+train_path = '/home/zhengminlai/下载/dataset/train/'
 
 data = dataset.read_train_sets(train_path, img_size, classes, validation_size=validation_ratio)
 
@@ -326,8 +326,8 @@ def print_validation_accuracy():
 
 
 if __name__ == '__main__':
-    # iterate 100 times
-    optimize(num_iterations=100)
+    # iterate 500 times
+    optimize(num_iterations=500)
     print_validation_accuracy()
 
     saver = tf.train.Saver()

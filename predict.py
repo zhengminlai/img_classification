@@ -38,13 +38,18 @@ def sample_prediction(test_im):
     test_pred = session.run(y, feed_dict=feed_dict_test)
     return classes[test_pred[0]]
 
+
 def save_to_file(file_name, contents):
     fh = open(file_name, 'w')
     fh.write(contents)
     fh.close()
 
+
 if __name__ == '__main__':
+    # the test image directory to be predicted
     test_img_dir = sys.argv[1]
+
+    # the output file where it records the prediction results
     output_addr = sys.argv[2]
 
     test_imgs, test_img_names = dataset.read_test_set(test_img_dir, img_size)
